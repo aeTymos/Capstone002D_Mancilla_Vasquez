@@ -1,0 +1,32 @@
+{% extends "home/base.html" %}
+{% load crispy_forms_tags %}
+{% block head %}
+<title>Creación de eventos</title>
+{% endblock %}
+
+{% block content %}
+<h1>Crear Evento</h1>
+<div class="card">
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit">Guardar</button>
+        </form>
+    </div>
+</div>
+
+<h2>Eventos Registrados</h2>
+<div class="event-list">
+    {% for evento in eventos %}
+    <div class="event-card">
+        {% if evento.imagen %}
+        <img src="{{ evento.imagen.url }}" alt="{{ evento.nom_evento }}">
+        {% endif %}
+        <h3>{{ evento.nom_evento }}</h3>
+        <p>Fecha Inicio: {{ evento.fec_inicio }}</p>
+        <p>Fecha Término: {{ evento.fec_termino }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+django == 5.1
+django-admin-interface
+django-crispy-forms
+crispy-bootstrap5
+python-dotenv
+psycopg2-binary # dev, pyscopg2 if production
+pillow

@@ -1,0 +1,62 @@
+{% extends "home/base.html" %}
+{% load static %}
+
+{% block css %}
+{% endblock %}
+
+{% block js %}
+{% endblock js %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="height: 45vh;">
+    <div class="text-center">
+        <img src="{% static "/imgs/acred.svg" %}" alt="Acreditaciones" height="124" style="margin-bottom: 20px;">
+        <h1>Acreditaciones Chile SA</h1>
+        <h3>Siempre confiable</h3>
+    </div>
+  </div>
+  <div class="d-flex justify-content-center align-items-center">
+    <img src="{% static "/imgs/banner.png" %}" alt="" width="100%">
+  </div>
+
+  <div class="container" style="margin-top: 10vh; margin-bottom: 4vh;">
+    <div class="row">
+        <div class="col">
+            <h2>Secciones</h2>
+            <p>Seleccione la sección a la cual quiera redireccionar</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Acreditación</h5>
+                    <h5 class="bi bi-check-circle">
+                        <a href="qr.html">Acredita una persona</a>
+                    </h5>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Histórico de eventos</h5>
+                    <h5 class="bi bi-book">
+                        <a href="qr.html">Revisa eventos anteriores</a>
+                    </h5>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Escanear QR</h5>
+                    <h5 class="bi bi-qr-code-scan">
+                        <a href="qr.html">Verifica una pulsera</a>
+                    </h5>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+{% endblock content %}
