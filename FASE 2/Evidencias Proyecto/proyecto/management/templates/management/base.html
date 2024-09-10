@@ -263,7 +263,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="{% url "acreditadores" %}">
+              <a class="nav-link d-flex align-items-center gap-2" href="{% url "listado_acreditadores" %}">
                 <svg class="bi"><use xlink:href="#puzzle"></use></svg>
                 Acreditadores
               </a>
@@ -309,8 +309,10 @@
             <li class="nav-item">
               <form method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
-                <button class="nav-link d-flex align-items-center gap-2" type="submit">Cerrar sesión</button>
-                {% comment %} <svg class="bi"><use xlink:href="#door-closed"></use></svg> {% endcomment %}
+                <button class="nav-link d-flex align-items-center gap-2" type="submit">
+                  <svg class="bi"><use xlink:href="#door-closed"></use></svg>
+                  Cerrar sesión
+                </button>
               </form>
               </a>
             </li>
@@ -320,6 +322,9 @@
     </div>
 
     <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+
+      
+
       {% block content %}
       {% endblock %}
     </main>
@@ -331,6 +336,17 @@
 <script src="{% static '/js/color-modes.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+{% if messages %}
+  {% for m in messages %}
+  <script>
+    Swal.fire({
+      icon: "{{ m.tags }}",
+      title: "{{ m.tags }}",
+      text: "{{ m }}"
+    });
+  </script>
+  {% endfor %}
+{% endif %}
 {% block js %}
 {% endblock %}
 </body>

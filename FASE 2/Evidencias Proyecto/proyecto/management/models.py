@@ -9,7 +9,7 @@ class Rol(models.Model):
         return self.tipo_rol
 
 ACCESOS = {
-    'NA': 'Sin Acceso',
+    'SA': 'Seleccionar acceso',
     'WP': 'Working Pass',
     'AA': 'All Access',
     'AAA': 'All Areas Access',
@@ -18,7 +18,7 @@ ACCESOS = {
 }
 
 class Acceso(models.Model):
-    tipo_acceso = models.CharField(max_length=3, choices=ACCESOS, default='NA')
+    tipo_acceso = models.CharField(max_length=3, choices=ACCESOS, default='SA')
     desc_acceso = models.CharField(max_length=100)
 
     def __str__(self):

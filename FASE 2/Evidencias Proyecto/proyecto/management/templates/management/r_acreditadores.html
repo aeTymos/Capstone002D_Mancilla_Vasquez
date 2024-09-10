@@ -8,19 +8,6 @@
 {% endblock %}
 
 {% block js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        {% if messages %}
-            {% for message in messages %}
-                Swal.fire({
-                    icon: '{{ message.tags }}',
-                    title: '{{ message.message }}',
-                    showConfirmButton: true
-                });
-            {% endfor %}
-        {% endif %}
-    });
-</script>
 {% endblock %}
 
 {% block content %}
