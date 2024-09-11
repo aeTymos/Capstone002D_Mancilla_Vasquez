@@ -27,6 +27,8 @@ def check_connection(db_configs):
 
     try:
         conn = psycopg2.connect(**db_configs)
+        # Print to which database we are connected
+        print(f"Conectado a la base de datos {db_configs['dbname']}")
         conn.close()
         return True
     except Exception as e:
