@@ -21,7 +21,7 @@ def registro(request):
         if formulario.is_valid():
             user = formulario.save()
             messages.success(request, f'Usuario para {user.first_name} {user.last_name} creado correctamente')
-            return redirect(to='l_acreditadores')
+            return redirect('listado_acreditadores')
         else:
             for error in formulario.errors.values():
                 messages.error(request, error)
