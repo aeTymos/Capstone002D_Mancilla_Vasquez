@@ -87,20 +87,27 @@ WSGI_APPLICATION = 'capstone_site.wsgi.application'
     }
 } """
 
-DATABASES = {}
-for db in db_check.DB_CONFIGS:
-    if db_check.check_connection(db):
-        DATABASES['default'] = {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': db['dbname'],
-            'USER': db['user'],
-            'PASSWORD': db['password'],
-            'HOST': db['host'],
-            'PORT': db['port'],
-        }
-        break
-    else:
-        raise ImproperlyConfigured('No se pudo establecer la conexión con ninguna base de datos.')
+
+def get_database():
+    databases = [db_check.DB_1, db_check.DB_2]
+
+    for db_config in databases:
+        if db_check.check_connection(**db_config):
+            return db_config
+    raise Exception('No se pudo establecer conexión con ninguna base de datos.')
+
+available_db = get_database()
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': available_db['NAME'],
+        'USER': available_db['USER'],
+        'PASSWORD': available_db['PASSWORD'],
+        'HOST': available_db['HOST'],
+        'PORT': available_db['PORT'],
+    }    
+}
 
 
 # Password validation

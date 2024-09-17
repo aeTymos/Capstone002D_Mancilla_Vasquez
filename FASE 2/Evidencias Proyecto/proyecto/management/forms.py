@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Acreditador
+from .models import Acreditador, Acreditado
 from django.core.exceptions import ValidationError
 
 class CustomUserCreationForm(UserCreationForm):
@@ -49,3 +49,9 @@ class CustomUserCreationForm(UserCreationForm):
             acreditador.save()
 
         return user
+    
+class AcreditadoForm(forms.ModelForm):
+
+    class Meta:
+        model = Acreditado
+        fields = ['rut', 'nombre', 'app_paterno', 'app_materno', 'fec_inicio', 'fec_termino', 'empresa', 'acceso', 'rol']

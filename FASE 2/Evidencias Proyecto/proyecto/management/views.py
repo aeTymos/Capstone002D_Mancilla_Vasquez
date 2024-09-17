@@ -1,7 +1,7 @@
 from django.shortcuts import render
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, AcreditadoForm
 from django.shortcuts import redirect
-from .models import Acreditador
+from .models import Acreditador, Acreditado
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import Http404
@@ -48,3 +48,29 @@ def listado_acreditadores(request):
     }
 
     return render(request, 'management/l_acreditadores.html', data)
+
+def listado_acreditados(request):
+
+    acreditados = Acreditado.objects.all()
+    page = request.GET.get('page', 1)
+
+    try:
+        paginator = Paginator(acreditados, 10)
+        acreditados = paginator.page(page)
+    except:
+        raise Http404    
+
+    data = {
+        'entity': acreditados,
+        'paginator': paginator,
+    }
+
+    return render(request, 'management/l_acreditados.html', data)
+
+def registro_acreditado(request):
+
+    data = {
+        'form': AcreditadoForm()
+    }
+
+    return render(request, 'management/r_acreditados.html', data)
