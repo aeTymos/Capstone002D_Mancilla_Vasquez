@@ -52,6 +52,28 @@ class CustomUserCreationForm(UserCreationForm):
     
 class AcreditadoForm(forms.ModelForm):
 
+    def save(self, commit=True):
+        acreditado = super().save(commit=False)
+        acreditado.nombre = self.cleaned_data['nombre']
+        acreditado.app_paterno = self.cleaned_data['app_paterno']
+        acreditado.app_materno = self.cleaned_data['app_materno']
+        acreditado.fec_inicio = self.cleaned_data['fec_inicio']
+        acreditado.fec_termino = self.cleaned_data['fec_termino']
+        acreditado.empresa = self.cleaned_data['empresa']
+        acreditado.acceso = self.cleaned_data['acceso']
+        acreditado.rol = self.cleaned_data['rol']
+
+        contador = 10000
+        while Acreditado.objects.filter().exists():
+            pulsera = f"{acreditado.rol.tipo_rol[:1].upper()}{acreditado.acceso.tipo_acceso[:3].upper()}-{contador}"
+            contador += 1
+        acreditado.id_pulsera = pulsera
+
+        if commit:
+            acreditado.save()
+
+        return acreditado
+
     class Meta:
         model = Acreditado
         fields = ['rut', 'nombre', 'app_paterno', 'app_materno', 'fec_inicio', 'fec_termino', 'empresa', 'acceso', 'rol']
