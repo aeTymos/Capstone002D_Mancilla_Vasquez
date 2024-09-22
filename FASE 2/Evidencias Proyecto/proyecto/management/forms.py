@@ -54,6 +54,7 @@ class AcreditadoForm(forms.ModelForm):
 
     def save(self, commit=True):
         acreditado = super().save(commit=False)
+        acreditado.rut = self.cleaned_data['rut']
         acreditado.nombre = self.cleaned_data['nombre']
         acreditado.app_paterno = self.cleaned_data['app_paterno']
         acreditado.app_materno = self.cleaned_data['app_materno']
@@ -64,12 +65,23 @@ class AcreditadoForm(forms.ModelForm):
         acreditado.rol = self.cleaned_data['rol']
 
         contador = 10000
+        pulsera_base = f"{acreditado.rol.tipo_rol[:1].upper()}{acreditado.acceso.tipo_acceso[:3].upper()}"
         while Acreditado.objects.filter().exists():
-            pulsera = f"{acreditado.rol.tipo_rol[:1].upper()}{acreditado.acceso.tipo_acceso[:3].upper()}-{contador}"
+            pulsera = f"{pulsera_base}-{contador}"
             contador += 1
-        acreditado.id_pulsera = pulsera
 
         if commit:
+            acreditado, created = Acreditado.objects.get_or_create(id=id)
+            acreditado.rut = self.cleaned_data['rut']
+            acreditado.nombre = self.cleaned_data['nombre']
+            acreditado.app_paterno = self.cleaned_data['app_paterno']
+            acreditado.app_materno = self.cleaned_data['app_materno']
+            acreditado.fec_inicio = self.cleaned_data['fec_inicio']
+            acreditado.fec_termino = self.cleaned_data['fec_termino']
+            acreditado.empresa = self.cleaned_data['empresa']
+            acreditado.acceso = self.cleaned_data['acceso']
+            acreditado.rol = self.cleaned_data['rol']
+            acreditado.id_pulsera = pulsera
             acreditado.save()
 
         return acreditado

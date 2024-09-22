@@ -13,16 +13,26 @@
                 <thead>
                 <tr>
                     <th scope="col">RUT</th>
+                    <th scope="col">ID Pulsera</th>
                     <th scope="col">Nombre completo</th>
                     <th scope="col">Correo</th>
+                    <th scope="col">Días a trabajar</th>
+                    <th scope="col">Empresa</th>
+                    <th scope="col">Cargo</th>
+                    <th scope="col">Acceso</th>
                 </tr>
                 </thead>
                 <tbody>
                     {% for a in entity %}
                     <tr>
                         <td>{{ a.rut_acreditador }}</td>
+                        <td>{{ a.id_pulsera }}</td>
                         <td>{{ a.nombre }} {{ a.app_paterno }}  {{ a.app_materno }}</td>
                         <td>{{ a.correo }}</td>
+                        {% comment %}<td>{{ a.dias_trabajo }}</td>{% endcomment %}
+                        <td>{{ a.empresa }}</td>
+                        <td>{{ a.rol }}</td>
+                        <td>{{ a.acceso }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

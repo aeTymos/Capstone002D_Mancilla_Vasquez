@@ -277,30 +277,14 @@
             </a>
           </h6>
           <ul class="nav flex-column mb-auto">
+            {% for e in eventos_recientes %}
             <li class="nav-item">
               <a class="nav-link d-flex align-items-center gap-2" href="#">
                 <svg class="bi"><use xlink:href="#file-earmark-text"></use></svg>
-                Evento actual
+                {{ e.nom_evento }} - {{ e.fec_termino }}
               </a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="#">
-                <svg class="bi"><use xlink:href="#file-earmark-text"></use></svg>
-                Último evento
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="#">
-                <svg class="bi"><use xlink:href="#file-earmark-text"></use></svg>
-                Últimos 6 meses
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="#">
-                <svg class="bi"><use xlink:href="#file-earmark-text"></use></svg>
-                Último año
-              </a>
-            </li>
+            {% endfor %}
           </ul>
           {% endif %}
           <hr class="my-3">
@@ -313,6 +297,7 @@
                   <svg class="bi"><use xlink:href="#door-closed"></use></svg>
                   Cerrar sesión
                 </button>
+                <br>
               </form>
               </a>
             </li>
