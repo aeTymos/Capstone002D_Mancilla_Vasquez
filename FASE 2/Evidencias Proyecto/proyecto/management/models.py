@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import timedelta
 
 # Create your models here.
 class Rol(models.Model):
@@ -14,7 +15,6 @@ ACCESOS = {
     'AA': 'All Access',
     'AAA': 'All Areas Access',
     'S': 'Seguridad',
-    'T': 'Ticketmaster'
 }
 
 class Acceso(models.Model):
@@ -56,14 +56,32 @@ class Acreditado(models.Model):
     nombre = models.CharField(max_length=40)
     app_paterno = models.CharField(max_length=40)
     app_materno = models.CharField(max_length=40)
-    fec_inicio = models.DateTimeField()
-    fec_termino = models.DateTimeField()
+    fec_inicio = models.DateField()
+    fec_termino = models.DateField()
     empresa = models.ForeignKey(Empresa, on_delete=models.PROTECT)
     acceso = models.ForeignKey(Acceso, on_delete=models.PROTECT)
     rol = models.ForeignKey(Rol, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.rut
+
+    def dias_de_trabajo(self):
+        fecha_inicio = self.fec_inicio
+        dias_de_trabajo = []
+
+        while fecha_inicio <= self.fec_termino:
+            dias_de_trabajo.append(fecha_inicio)
+            fecha_inicio += timedelta(days=1)
+        
+        return dias_de_trabajo
+
+class Acreditacion(models.Model):
+    acreditador = models.ForeignKey(Acreditador, on_delete=models.PROTECT)
+    acreditado = models.ForeignKey(Acreditado, on_delete=models.PROTECT)
+    fecha_acreditacion = models.DateField()
+
+    def __str__(self):
+        return f'{self.acreditador} - {self.acreditado}'
 
 class Evento(models.Model):
     nom_evento = models.CharField(max_length=50)

@@ -1,5 +1,5 @@
 {% extends "management/base.html" %}
-
+{% load custom_filters %}
 {% block content %}
 
 <br><br>
@@ -15,7 +15,6 @@
                     <th scope="col">RUT</th>
                     <th scope="col">ID Pulsera</th>
                     <th scope="col">Nombre completo</th>
-                    <th scope="col">Correo</th>
                     <th scope="col">Días a trabajar</th>
                     <th scope="col">Empresa</th>
                     <th scope="col">Cargo</th>
@@ -25,11 +24,14 @@
                 <tbody>
                     {% for a in entity %}
                     <tr>
-                        <td>{{ a.rut_acreditador }}</td>
+                        <td>{{ a.rut }}</td>
                         <td>{{ a.id_pulsera }}</td>
-                        <td>{{ a.nombre }} {{ a.app_paterno }}  {{ a.app_materno }}</td>
-                        <td>{{ a.correo }}</td>
-                        {% comment %}<td>{{ a.dias_trabajo }}</td>{% endcomment %}
+                        <td>{{ a.nombre }} {{ a.app_paterno }} {{ a.app_materno }}</td>
+                        <td>
+                            {% for dia in dias_de_trabajo|get:a.id %}
+                                {{ dia|date:"d/m" }}&nbsp;
+                            {% endfor %}
+                        </td>
                         <td>{{ a.empresa }}</td>
                         <td>{{ a.rol }}</td>
                         <td>{{ a.acceso }}</td>

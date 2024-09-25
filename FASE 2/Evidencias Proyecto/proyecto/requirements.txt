@@ -1,6 +1,7 @@
 django == 5.1
 django-admin-interface
 django-crispy-forms
+django-bootstrap-datepicker-plus
 crispy-bootstrap5
 python-dotenv
 psycopg2-binary # dev, pyscopg2 if production

@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'crispy_forms',
     'crispy_bootstrap5',
+    'bootstrap_datepicker_plus',
     'home',
     'django_login',
     'events',
@@ -87,25 +88,16 @@ WSGI_APPLICATION = 'capstone_site.wsgi.application'
     }
 } """
 
-
-def get_database():
-    databases = [db_check.DB_1, db_check.DB_2]
-
-    for db_config in databases:
-        if db_check.check_connection(**db_config):
-            return db_config
-    raise Exception('No se pudo establecer conexión con ninguna base de datos.')
-
-available_db = get_database()
+# available_db = db_check.get_database()
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': available_db['NAME'],
-        'USER': available_db['USER'],
-        'PASSWORD': available_db['PASSWORD'],
-        'HOST': available_db['HOST'],
-        'PORT': available_db['PORT'],
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
     }    
 }
 

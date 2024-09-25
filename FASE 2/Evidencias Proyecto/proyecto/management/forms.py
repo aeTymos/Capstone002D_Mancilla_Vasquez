@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Acreditador, Acreditado
 from django.core.exceptions import ValidationError
+from bootstrap_datepicker_plus.widgets import DatePickerInput
 
 class CustomUserCreationForm(UserCreationForm):
     
@@ -52,9 +53,20 @@ class CustomUserCreationForm(UserCreationForm):
     
 class AcreditadoForm(forms.ModelForm):
 
+    app_materno = forms.CharField(max_length=30, required=False)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        fec_inicio = cleaned_data.get('fec_inicio')
+        fec_termino = cleaned_data.get('fec_termino')
+        if fec_inicio and fec_termino and fec_inicio > fec_termino:
+            raise ValidationError('La fecha de inicio no puede ser mayor a la fecha de término.')
+        return cleaned_data
+
     def save(self, commit=True):
+
         acreditado = super().save(commit=False)
-        acreditado.rut = self.cleaned_data['rut']
+        acreditado.rut_acreditado = self.cleaned_data['rut']
         acreditado.nombre = self.cleaned_data['nombre']
         acreditado.app_paterno = self.cleaned_data['app_paterno']
         acreditado.app_materno = self.cleaned_data['app_materno']
@@ -63,24 +75,18 @@ class AcreditadoForm(forms.ModelForm):
         acreditado.empresa = self.cleaned_data['empresa']
         acreditado.acceso = self.cleaned_data['acceso']
         acreditado.rol = self.cleaned_data['rol']
-
+        
         contador = 10000
         pulsera_base = f"{acreditado.rol.tipo_rol[:1].upper()}{acreditado.acceso.tipo_acceso[:3].upper()}"
-        while Acreditado.objects.filter().exists():
+        pulsera = None
+
+        while True:
             pulsera = f"{pulsera_base}-{contador}"
+            if not Acreditado.objects.filter(id_pulsera=pulsera).exists():
+                break
             contador += 1
 
         if commit:
-            acreditado, created = Acreditado.objects.get_or_create(id=id)
-            acreditado.rut = self.cleaned_data['rut']
-            acreditado.nombre = self.cleaned_data['nombre']
-            acreditado.app_paterno = self.cleaned_data['app_paterno']
-            acreditado.app_materno = self.cleaned_data['app_materno']
-            acreditado.fec_inicio = self.cleaned_data['fec_inicio']
-            acreditado.fec_termino = self.cleaned_data['fec_termino']
-            acreditado.empresa = self.cleaned_data['empresa']
-            acreditado.acceso = self.cleaned_data['acceso']
-            acreditado.rol = self.cleaned_data['rol']
             acreditado.id_pulsera = pulsera
             acreditado.save()
 
@@ -89,3 +95,8 @@ class AcreditadoForm(forms.ModelForm):
     class Meta:
         model = Acreditado
         fields = ['rut', 'nombre', 'app_paterno', 'app_materno', 'fec_inicio', 'fec_termino', 'empresa', 'acceso', 'rol']
+
+        widgets = {
+            'fec_inicio': DatePickerInput(options={"format": "DD/MM/YYYY"}),
+            'fec_termino': DatePickerInput(options={"format": "DD/MM/YYYY"}, range_from='fec_inicio'),    
+        }

@@ -5,6 +5,7 @@ from .models import Acreditador, Acreditado
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import Http404
+from django.contrib.auth.decorators import login_required, permission_required
 
 # Create your views here.
 def dashboard(request):
@@ -53,6 +54,7 @@ def listado_acreditados(request):
 
     acreditados = Acreditado.objects.all()
     page = request.GET.get('page', 1)
+    dias_de_trabajo = {acreditado.id: acreditado.dias_de_trabajo() for acreditado in acreditados}
 
     try:
         paginator = Paginator(acreditados, 10)
@@ -63,6 +65,7 @@ def listado_acreditados(request):
     data = {
         'entity': acreditados,
         'paginator': paginator,
+        'dias_de_trabajo': dias_de_trabajo,
     }
 
     return render(request, 'management/l_acreditados.html', data)
@@ -72,5 +75,18 @@ def registro_acreditado(request):
     data = {
         'form': AcreditadoForm()
     }
+
+    if request.method == 'POST':
+        formulario = AcreditadoForm(data=request.POST)
+        if formulario.is_valid():
+            acreditado = formulario.save()
+            messages.success(request, f'Acreditación para {acreditado.nombre} {acreditado.app_paterno} realizada correctamente')
+            return redirect('listado_acreditados')
+        else:
+            for error in formulario.errors.values():
+                messages.error(request, error)
+            data["form"] = formulario
+    else:
+        formulario = AcreditadoForm()
 
     return render(request, 'management/r_acreditados.html', data)
