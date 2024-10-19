@@ -1,1 +1,0 @@
-# Capstone_002D_Mancilla_Vasquez
