@@ -167,3 +167,4 @@ database/
 db/
 .db/
 .database/
+docker-compose.yaml

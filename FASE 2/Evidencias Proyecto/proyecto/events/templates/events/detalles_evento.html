@@ -1,0 +1,35 @@
+{% extends 'management/base.html' %}
+{% load static %}
+
+{% block head %}
+<title>Detalles del evento - {{ evento.nom_evento }}</title>
+{% endblock %}
+
+{% block content %}
+<br><br>
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <strong><h2>{{ evento.nom_evento }}</h2></strong>
+            <hr>
+            <div class="table-responsive small">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th scope="col">Fecha de inicio</th>
+                            <th scope="col">Fecha de término</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ evento.fec_inicio }}</td>
+                            <td>{{ evento.fec_termino }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<br><br>
+{% endblock %}

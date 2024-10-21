@@ -1,0 +1,51 @@
+{% extends "management/base.html" %}
+
+{% block content %}
+
+<br><br>
+<div class="container">
+    <div class="row">
+        <h2>Eventos registrados</h2>
+        <hr>
+        <br><br>
+        <div class="table-responsive small">
+            <table class="table table-striped table-sm">
+                <thead>
+                <tr>
+                    <th scope="col">Evento</th>
+                    <th scope="col">Fecha de inicio</th>
+                    <th scope="col">Fecha de término</th>
+                    <th scope="col">Estado</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for e in entity %}
+                    <tr>
+                        <td>{{ e.nom_evento }}</td>
+                        <td>{{ e.fec_inicio }}</td>
+                        <td>{{ e.fec_termino }}</td>
+                        {% if e.activo == True %}
+                        <td>En curso</td>
+                        {% else %}
+                        <td>Terminado</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <hr>
+            <div>
+                {% include 'home/paginator.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+<br><br>
+
+{% endblock %}
+
+{% comment %} 
+{% if evento.imagen %}
+        <img src="{{ evento.imagen.url }}" alt="{{ evento.nom_evento }}">
+        {% endif %}
+{% endcomment %}

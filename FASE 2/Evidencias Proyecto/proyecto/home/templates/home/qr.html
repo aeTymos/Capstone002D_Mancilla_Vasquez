@@ -1,0 +1,157 @@
+{% extends "home/base.html" %} 
+{% load static %} 
+{% block css %}
+<style>
+  /* Wrapper div to center content */
+  .centered-content {
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+    justify-content: center; /* Center items vertically */
+    align-items: center; /* Center items horizontally */
+    min-height: 100vh; /* Make sure the div takes the full viewport height */
+  }
+
+  h1 {
+    margin-bottom: 20px; /* Add space between the title and video */
+    font-size: 2em; /* Increase the font size of the title */
+    text-align: center; /* Center the text */
+  }
+
+  video {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    border: 2px solid #ccc; /* Optional: Add a border to the video */
+    border-radius: 10px; /* Optional: Round the corners of the video */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow for better appearance */
+  }
+
+  #result {
+    margin-top: 20px; /* Add space between the video and result */
+    text-align: center; /* Center the text */
+    font-size: 1.2em; /* Slightly increase the font size */
+  }
+
+ #qr_code {
+    margin-top: 20px; /* Add space between the video and result */
+    text-align: center; /* Center the text */
+    font-size: 1.2em; /* Slightly increase the font size */
+  }
+
+  #error-message {
+    display: none; /* Hidden by default */
+    text-align: center;
+    font-size: 1.5em;
+    color: red;
+  }
+
+  #error-icon {
+    display: none; /* Hidden by default */
+    width: 100px;
+    height: 100px;
+    margin-top: 20px;
+  }
+</style>
+{% endblock css %} 
+
+{% block content %}
+
+<div class="centered-content">
+  <h1>Control de Accesos v2</h1>
+
+  <!-- Video stream -->
+  <video id="video" autoplay></video>
+
+  <!-- Error message or icon in case of camera access issues -->
+  <p id="error-message">error al conectar la camara.</p>
+  <img id="error-icon" src="{% static '/imgs/error.svg' %}" alt="Camera Error" />
+  
+  <p id="qr_code"></p>
+  <p id="result"></p>
+
+</div>
+<!-- Include jsQR from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.3.1/dist/jsQR.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- jQuery for AJAX -->
+
+<script>
+  const video = document.getElementById("video");
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  const resultElement = document.getElementById("result");
+  const qrcodeElement = document.getElementById("qr_code");
+  const errorMessage = document.getElementById("error-message");
+  const errorIcon = document.getElementById("error-icon");
+  let lastQRCode = null;
+
+  // Use the WebRTC API to access the camera
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  navigator.mediaDevices
+    .getUserMedia({ video: { facingMode: "environment" } })
+    .then((stream) => {
+      video.srcObject = stream;
+      video.setAttribute("playsinline", true); // iOS hack to make video play inline
+      video.play();
+      requestAnimationFrame(scanQRCode);
+    })
+    .catch((err) => {
+      // Hide video and show error message
+      video.style.display = "none";
+      errorMessage.style.display = "block"; // Show error message
+      errorIcon.style.display = "block"; // Show error icon
+      console.error("Error accessing camera: ", err);
+    });
+} else {
+  // Handle the case where mediaDevices is undefined
+  video.style.display = "none"; // Hide the video element
+  errorMessage.style.display = "block"; // Show error message
+  errorIcon.style.display = "block"; // Show error icon
+  console.error("MediaDevices API is not available in this browser.");
+}
+
+
+  function scanQRCode() {
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      // Set canvas dimensions to match video feed
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Get image data from the canvas
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      const qrCode = jsQR(imageData.data, canvas.width, canvas.height);
+
+      if (qrCode && qrCode.data !== lastQRCode) {
+        // Prevent multiple submissions for the same QR code
+        lastQRCode = qrCode.data;
+
+        qrcodeElement.innerText = "Codigo: "+ qrCode.data;
+        resultElement.innerText = "QR Code detectado... enviando";
+
+        // Send QR code data to the server via AJAX
+        $.ajax({
+          url: "/qr/", // URL to send data to
+          method: "POST",
+          data: {
+            qr_data: qrCode.data,
+            csrfmiddlewaretoken: "{{ csrf_token }}", // Ensure CSRF token is passed
+          },
+          success: function (response) {
+            // Display the response from the server
+            resultElement.innerText = response.qr_data;
+          },
+          error: function (xhr, status, error) {
+            resultElement.innerText = "Error: " + error;
+          },
+        });
+      }
+    }
+
+    // Continue scanning
+    requestAnimationFrame(scanQRCode);
+  }
+</script>
+
+
+{% endblock content %}

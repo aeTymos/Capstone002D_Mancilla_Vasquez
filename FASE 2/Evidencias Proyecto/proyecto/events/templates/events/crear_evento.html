@@ -1,0 +1,51 @@
+{% extends "management/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block head %}
+<title>Creación de eventos</title>
+<script src="{% static '/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static '/js/jquery-ui.min.js' %}"></script>
+{% endblock %}
+
+{% block js %}
+<script>
+    $(document).ready(function () {
+        $('.dateinput').datepicker()
+    });
+</script>
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+        integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="{% static '/css/jquery-ui.min.css' %}">
+<link rel="stylesheet" href="{% static '/css/jquery-ui.structure.min.css' %}">
+<link rel="stylesheet" href="{% static '/css/jquery-ui.theme.min.css' %}">
+{% endblock %}
+
+{% block content %}
+<br><br>
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-md-6 offset-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h2>Ingresa datos del evento</h2>
+                    <hr>
+                    {{ form.media }}
+                    <form action="" method="post">
+
+                        {% csrf_token %}
+                        {{ form | crispy }}
+
+                        <input type="submit" value="ingresar" class="btn btn-primary">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br><br>
+{% endblock %}
