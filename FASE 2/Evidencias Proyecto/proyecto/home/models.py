@@ -12,7 +12,9 @@ class Contacto(models.Model):
     correo = models.EmailField()
     tipo_consulta = models.IntegerField(choices=opciones_contacto)
     mensaje = models.TextField(max_length=300)
-    archivo = models.FileField(upload_to='nominas/')
+    archivo = models.FileField(upload_to='uploads/tmp', null=True)
+    hora_subido = models.DateTimeField(auto_now_add=True)
+    aceptado = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.id
+        return self.nombre

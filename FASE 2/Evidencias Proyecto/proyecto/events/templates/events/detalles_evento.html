@@ -1,35 +1,82 @@
-{% extends 'management/base.html' %}
-{% load static %}
-
-{% block head %}
-<title>Detalles del evento - {{ evento.nom_evento }}</title>
-{% endblock %}
+{% extends "management/base.html" %}
 
 {% block content %}
 <br><br>
 <div class="container">
-    <div class="row">
-        <div class="col">
-            <strong><h2>{{ evento.nom_evento }}</h2></strong>
-            <hr>
-            <div class="table-responsive small">
-                <table class="table table-striped table-sm">
-                    <thead>
-                        <tr>
-                            <th scope="col">Fecha de inicio</th>
-                            <th scope="col">Fecha de término</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>{{ evento.fec_inicio }}</td>
-                            <td>{{ evento.fec_termino }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+    <h2>{{ evento.nom_evento }}</h2>
+    {% if evento.imagen %}
+    <img class="img-fluid mb-3" src="{{ evento.imagen.url }}" alt="{{ evento.nom_evento }}">
+    {% endif %}
+    <p><strong>Fecha de inicio:</strong> {{ evento.fec_inicio }}</p>
+    <p><strong>Fecha de término:</strong> {{ evento.fec_termino }}</p>
+    <p><strong>Estado:</strong> {% if evento.activo %} En curso {% else %} Terminado {% endif %}</p>
+
+    <!-- Formulario de búsqueda -->
+    <form id="searchForm">
+        <div class="input-group mb-3">
+            <input type="text" id="searchInput" class="form-control" placeholder="Buscar acreditado..." aria-label="Buscar acreditado">
         </div>
+    </form>
+
+    <h3 class="mt-4">Acreditados</h3>
+    <div class="table-responsive small" id="searchResults">
+        <!-- Contenido de la tabla de acreditados -->
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th scope="col">RUT</th>
+                    <th scope="col">ID Pulsera</th>
+                    <th scope="col">Nombre completo</th>
+                    <th scope="col">Días trabajados</th>
+                    <th scope="col">Empresa</th>
+                    <th scope="col">Cargo</th>
+                    <th scope="col">Acceso</th>
+                    <th scope="col">Registrado por</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for acreditacion in acreditaciones %}
+                <tr>
+                    <td>{{ acreditacion.acreditado.rut }}</td>
+                    <td>{{ acreditacion.acreditado.id_pulsera }}</td>
+                    <td>{{ acreditacion.acreditado.nombre }} {{ acreditacion.acreditado.app_paterno }} {{ acreditacion.acreditado.app_materno }}</td>
+                    <td>
+                        {% for dia in acreditacion.acreditado.dias_de_trabajo %}
+                            {{ dia|date:"d/m" }}&nbsp;
+                        {% endfor %}
+                    </td>
+                    <td>{{ acreditacion.acreditado.empresa.nombre }}</td>
+                    <td>{{ acreditacion.acreditado.rol.tipo_rol }}</td>
+                    <td>{{ acreditacion.acreditado.acceso.tipo_acceso }}</td>
+                    <td>{{ acreditacion.acreditador.first_name }} {{ acreditacion.acreditador.last_name }} / {{ acreditacion.acreditador.username }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center">No hay acreditados para este evento.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
-<br><br>
+
+<script>
+    document.getElementById('searchInput').addEventListener('input', function() {
+        let query = this.value;
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', `{% url 'detalle_evento' evento.id %}?q=` + encodeURIComponent(query), true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                // Extraer solo la parte de la tabla desde la respuesta
+                let parser = new DOMParser();
+                let doc = parser.parseFromString(xhr.responseText, 'text/html');
+                let tableContent = doc.querySelector('#searchResults').innerHTML;
+                document.getElementById('searchResults').innerHTML = tableContent;
+            }
+        };
+        xhr.send();
+    });
+</script>
+
 {% endblock %}

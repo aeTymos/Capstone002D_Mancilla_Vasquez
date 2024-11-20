@@ -4,23 +4,64 @@
 
 {% block head %}
 <title>Registro de acreditado</title>
-<script src="{% static '/js/jquery-3.6.0.min.js' %}"></script>
-<script src="{% static '/js/jquery-ui.min.js' %}"></script>
+<script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'js/jquery-ui.min.js' %}"></script>
 {% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
         integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-<link rel="stylesheet" href="{% static '/css/jquery-ui.min.css' %}">
-<link rel="stylesheet" href="{% static '/css/jquery-ui.structure.min.css' %}">
-<link rel="stylesheet" href="{% static '/css/jquery-ui.theme.min.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/css/bootstrap-datepicker.min.css">
+<link rel="stylesheet" href="{% static 'css/jquery-ui.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/jquery-ui.structure.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/jquery-ui.theme.min.css' %}">
+<style>
+    /* Adjust the input and date picker styles */
+.input-group .form-control {
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.input-group-addon {
+    padding: 6px 12px;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group-addon i {
+    font-size: 1.2em; /* Adjust icon size */
+}
+
+.input-group label {
+    font-weight: bold;
+    margin-bottom: 5px; /* Add some space between label and input */
+}
+
+.datepicker {
+    z-index: 1050 !important;  /* Ensure it appears above other elements */
+}
+</style>
 {% endblock %}
 
 {% block js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/locales/bootstrap-datepicker.es.min.js"></script>
 <script>
-    $(document).ready(function () {
-        $('.dateinput').datepicker()
+    $(document).ready(function() {
+        $('#datepicker').datepicker({
+            startDate: new Date(),
+            multidate: true,
+            format: "dd-mm-yyyy",
+            language: 'es'
+        }).on('changeDate', function(e) {
+            var dates = e.dates.map(function(date) {
+                return moment(date).format('DD-MM-YYYY');
+            }).join(',');
+            $('input[name="dias_de_asistencia"]').val(dates);
+        });
     });
 </script>
 {% endblock %}
@@ -37,10 +78,19 @@
                     <hr>
                     {{ form.media }}
                     <form action="" method="post">
-
                         {% csrf_token %}
                         {{ form | crispy }}
-
+                    
+                        <!-- This field will now be visible for debugging and to display the selected dates -->
+                        <label for="dias_de_asistencia" class="d-block" style="margin-bottom: 8px;">Fechas de asistencia*</label>
+                        <div class="input-group date form-group" id="datepicker">
+                            <input type="text" class="form-control" id="dias_de_asistencia" name="dias_de_asistencia" placeholder="Selecciona múltiples fechas" required value="{{ form.dias_de_asistencia.value }}">
+                            <span class="input-group-addon">
+                                <i class="fas fa-calendar-alt"></i> 
+                                <span class="count"></span>
+                            </span>
+                        </div>
+                        <br>
                         <input type="submit" value="Ingresar" class="btn btn-primary">
                     </form>
                 </div>

@@ -1,6 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import User
-from datetime import timedelta
+from django.contrib.auth.models import AbstractUser
+from datetime import datetime, date
 
 # Create your models here.
 class Rol(models.Model):
@@ -39,49 +39,47 @@ class Encargado(models.Model):
     def __str__(self):
         return self.nombre
 
-class Acreditador(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    rut_acreditador = models.CharField(max_length=12, unique=True)
-    nombre = models.CharField(max_length=40)
-    app_paterno = models.CharField(max_length=40)
-    app_materno = models.CharField(max_length=40)
-    correo = models.EmailField(max_length=40, unique=True)
+class Acreditador(AbstractUser):
+    # TODO: Cambiar a int y agregar dv
+    # rut = models.IntegerField(unique=True)
+    # dv = models.IntegerField()
+    rut = models.CharField(max_length=12, unique=True)
 
     def __str__(self):
-        return self.rut_acreditador
+        return self.rut
 
 class Acreditado(models.Model):
+    # TODO: Cambiar a int y agregar dv
+    # rut = models.IntegerField(unique=True)
+    # dv = models.IntegerField()
     rut = models.CharField(max_length=12, unique=True)
     id_pulsera = models.CharField(max_length=15, unique=True)
     nombre = models.CharField(max_length=40)
     app_paterno = models.CharField(max_length=40)
     app_materno = models.CharField(max_length=40)
-    fec_inicio = models.DateField()
-    fec_termino = models.DateField()
     empresa = models.ForeignKey(Empresa, on_delete=models.PROTECT)
     acceso = models.ForeignKey(Acceso, on_delete=models.PROTECT)
     rol = models.ForeignKey(Rol, on_delete=models.PROTECT)
 
     def __str__(self):
-        return self.rut
+        return self.rut    
 
     def dias_de_trabajo(self):
-        fecha_inicio = self.fec_inicio
-        dias_de_trabajo = []
+        return Asistencia.objects.filter(acreditado=self).values_list('dia', flat=True)
 
-        while fecha_inicio <= self.fec_termino:
-            dias_de_trabajo.append(fecha_inicio)
-            fecha_inicio += timedelta(days=1)
-        
-        return dias_de_trabajo
+class Asistencia(models.Model):
+    dia = models.DateField()
+    acreditado = models.ForeignKey(Acreditado, on_delete=models.CASCADE)
 
-class Acreditacion(models.Model):
-    acreditador = models.ForeignKey(Acreditador, on_delete=models.PROTECT)
-    acreditado = models.ForeignKey(Acreditado, on_delete=models.PROTECT)
-    fecha_acreditacion = models.DateField()
+    @classmethod
+    def create_from_date(cls, fecha, acreditado):
+        return cls(
+            dia=fecha,
+            acreditado=acreditado
+        )
 
     def __str__(self):
-        return f'{self.acreditador} - {self.acreditado}'
+        return f"{self.acreditado.nombre} - {self.dia.day}/{self.dia.month}/{self.dia.year}"
 
 class Evento(models.Model):
     nom_evento = models.CharField(max_length=50)
@@ -89,7 +87,18 @@ class Evento(models.Model):
     fec_termino = models.DateField()
     imagen = models.ImageField(upload_to='event_images', null=True, blank=True)
     activo = models.BooleanField(default=True)
+    accmax = models.IntegerField()
+    accmin = models.IntegerField()
 
     def __str__(self):
         return self.nom_evento
 
+
+class Acreditacion(models.Model):
+    evento = models.ForeignKey(Evento, on_delete=models.PROTECT)
+    acreditador = models.ForeignKey(Acreditador, on_delete=models.PROTECT)
+    acreditado = models.ForeignKey(Acreditado, on_delete=models.CASCADE)
+    fecha_acreditacion = models.DateField()
+
+    def __str__(self):
+        return f'{self.acreditador} - {self.acreditado} - {self.evento}'

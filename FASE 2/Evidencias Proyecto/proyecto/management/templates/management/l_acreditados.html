@@ -35,6 +35,13 @@
                         <td>{{ a.empresa }}</td>
                         <td>{{ a.rol }}</td>
                         <td>{{ a.acceso }}</td>
+                        <td>
+                            {% if not a.id_pulsera %}
+                                <a href="{% url 'registrar_qr_evento' acreditado_id=a.id %}" class="btn btn-primary btn-sm">
+                                    Vincular a Pulsera
+                                </a>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

@@ -1,0 +1,429 @@
+{% extends "home/base.html" %} 
+{% load static %} 
+{% block css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css">
+
+<style>
+    :root {
+        --padding: 8px;
+        --btn-padding: 4px 8px;
+        --border-color: #dee2e6;
+        --odd-row-bg: #f8f9fa;
+        --hover-row-bg: #e9ecef;
+        --header-bg: #e1e1e1;
+        --cell-border: #ccc;
+        --cell-bg: #f3f3f3;
+        --grid-gap: 1px;
+    }
+    
+    /* General styling */
+    h1, h2, form, button {
+        text-align: center;
+    }
+    
+    /* Table styling */
+    
+    #editable-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1000px;
+        table-layout: fixed;
+        border: 1px solid var(--border-color);
+    }
+    
+    
+    
+    #editable-table th, #editable-table td {
+        border: 1px solid var(--border-color);
+        padding: var(--padding);
+        text-align: center;
+        background-color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Header row styling */
+    #editable-table thead tr:first-child th,
+    #editable-table thead tr:nth-child(2) th {
+        background-color: var(--header-bg);
+        font-weight: bold;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    
+    #editable-table thead tr:nth-child(2) th {
+        top: 40px;
+        z-index: 9;
+    }
+    
+    #editable-table thead tr:first-child th {
+        background-color: #829cbc;
+    }
+    
+    #editable-table th:last-child,
+    #editable-table td:last-child {
+        background-color: #829cbc;
+    }
+    
+    /* Row styling */
+    #editable-table tbody tr:nth-child(odd) {
+        background-color: var(--odd-row-bg);
+    }
+    
+    #editable-table tbody tr:hover {
+        background-color: var(--hover-row-bg);
+    }
+    
+    /* Delete button styling */
+    .delete-row, .delete-col {
+        margin: 0;
+        padding: var(--btn-padding);
+        width: 100%;
+        background-color: #ffcccc;
+        border: none;
+        color: #333;
+        cursor: pointer;
+        text-align: center;
+    }
+    
+    .delete-row:hover, .delete-col:hover {
+        background-color: #ff9999;
+    }
+    
+    /* Cell content styling */
+    .cell-content {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border: 1px solid var(--cell-border);
+        background-color: var(--cell-bg);
+    }
+    
+    .cell-content div {
+        border: 1px solid #ddd;
+        background-color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+    
+    .cell-content div:nth-child(1) {
+        font-style: italic;
+        font-weight: bold;
+        color: #999;
+    }
+    
+    /* Grid for cells */
+    .cells {
+        display: grid;
+        grid-template-columns: 40px repeat(11, 1fr);
+        grid-gap: var(--grid-gap);
+        background: var(--header-bg);
+    }
+    
+    /* Responsive table */
+    @media (max-width: 768px) {
+        #table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        #editable-table {
+            min-width: 600px;
+        }
+    }
+    
+    /* Form and input styling */
+    #column-mapping-container select, form input {
+        width: 100%;
+        padding: 6px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        background-color: #fff;
+        text-align: center;
+        margin: 0 auto;
+    }
+    
+    /* Table container styling */
+    #table-container {
+        max-height: 400px;
+        margin: 20px auto;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    #upload-container, #table-options, #loading-spinner {
+        margin-bottom: 50px;
+    }
+    
+    /* Compact delete button */
+    .compact-btn {
+        background-color: transparent;
+        border: none;
+        color: red;
+        font-size: 12px;
+        padding: 2px 5px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    
+    .compact-btn:hover {
+        color: darkred;
+        text-decoration: underline;
+    }
+    
+    /* Dropdown styling */
+    th .form-select {
+        width: 70%;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    
+    th .compact-btn {
+        width: 20%;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    </style>
+{% endblock css %}
+
+{% block js %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+
+    // Show spinner with loading text
+    function showLoadingMessage() {
+        $('#loading-spinner').show();
+        $('#loading-text').text('Cargando datos, por favor espera...');
+    }
+    
+    // Change to success icon
+    function showSuccessMessage() {
+        $('#loading-icon').removeClass('spinner-border').addClass('bi bi-check-circle-fill');  // Change icon
+        $('#loading-text').text('Operación completada con éxito.');
+    }
+    
+    // Change to warning icon
+    function showWarningMessage() {
+        $('#loading-icon').removeClass('spinner-border').addClass('bi bi-exclamation-triangle-fill');  // Change icon
+        $('#loading-text').text('Advertencia: ocurrió un problema.');
+    }
+    
+    // Hide spinner and reset to default
+    function hideSpinner() {
+        $('#loading-spinner').hide();
+        $('#loading-icon').removeClass('bi bi-check-circle-fill bi-exclamation-triangle-fill').addClass('spinner-border');  // Reset icon to spinner
+    }
+    
+    
+    
+    $('#upload-form').on('submit', function (event) {
+        event.preventDefault();
+        var formData = new FormData(this);
+       $('#upload-container').hide();
+       showLoadingMessage();
+        $.ajax({
+            url: '',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+            hideSpinner();
+              $('#table-options').show();
+               $('#table-container').show(); 
+            $('#table-container').html(response.table);
+            initialState = getTableState();  // Save the initial table state
+            saveState();  // Save initial state in undo stack
+    
+            },
+            error: function () {
+                  // Hide loading spinner on error
+              showWarningMessage();
+            }
+        });
+    });
+    
+    // Save table and send back to the server
+    $('#save-table').on('click', function () {
+            
+    $('#table-options').hide(); 
+    $('#table-container').hide(); 
+    showLoadingMessage();
+        var tableData = [];
+        $('#editable-table tbody tr').each(function () {
+            var rowData = [];
+            $(this).find('td').each(function () {
+                rowData.push($(this).text());
+            });
+            tableData.push(rowData);
+        });
+    
+        // Capture the selected column mappings from the dropdowns in the first row of the table header
+        var columnMappings = [];
+        $('#editable-table thead tr:nth-child(2) th select').each(function () {
+            columnMappings.push($(this).val());
+        });
+    
+        $.ajax({
+            url: '/save_table/',
+            type: 'POST',
+            data: {
+                table_data: JSON.stringify(tableData),
+                column_mapping: JSON.stringify(columnMappings),  // Send the mapping to the server
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function (response) {
+              showSuccessMessage();
+              //$('#upload-container').show();
+            }
+        });
+    });
+    
+     
+    // Event delegation to handle delete row buttons
+    $(document).on('click', '.delete-row', function () {
+                saveState(); 
+                // Ensure that only rows inside the table body are deleted (not the header)
+                if ($(this).closest('tbody').length) {
+                    $(this).closest('tr').detach();  // Remove the row containing the clicked button
+                }
+            });
+     
+            // Event delegation to handle delete column buttons
+    $(document).on('click', '.delete-col', function () {
+                saveState(); 
+                var colIndex = $(this).parent().index();  // Get the index of the column header
+     
+                // Remove the corresponding dropdown for this column
+                //$('#column-mapping-container').find('table tr td').eq(colIndex).remove();
+     
+                // Remove the corresponding column from the table
+                $('#editable-table').find('tr').each(function () {
+                    $(this).find('td, th').eq(colIndex).detach();  // Remove the corresponding column
+                });
+            });
+    
+    
+    
+    
+    // redo, undo and undo all stuff.
+    var undoStack = [];
+    var redoStack = [];
+    var initialState;  // To store the initial table state
+    
+    // Function to get current table state (in HTML format)
+    function getTableState() {
+        return $('#editable-table').prop('outerHTML'); // Get the complete HTML of the table
+    }
+    
+    // Function to set table state
+    function setTableState(state) {
+        $('#editable-table').replaceWith(state); // Replace the entire table with the new state
+    }
+    
+    // Save the current table state to the undo stack before making changes
+    function saveState() {
+        undoStack.push(getTableState());
+        redoStack = [];  // Clear redo stack when new action is performed
+    }
+    
+    // Save the initial state when the page loads
+    $(document).ready(function() {
+    });
+    
+    // Undo button click handler
+    $('#undo').on('click', function() {
+        if (undoStack.length > 0) {
+            var currentState = getTableState();
+            redoStack.push(currentState);  // Save current state in redo stack
+            var previousState = undoStack.pop();  // Retrieve the previous state
+            setTableState(previousState);  // Set the table to the previous state
+        } else {
+            alert('No existen mas cambios.');
+        }
+    });
+    
+    // Redo button click handler
+    $('#redo').on('click', function() {
+        if (redoStack.length > 0) {
+            var currentState = getTableState();
+            undoStack.push(currentState);  // Save current state in undo stack
+            var nextState = redoStack.pop();  // Retrieve the next state
+            setTableState(nextState);  // Set the table to the next state
+        } else {
+            alert('No existen mas cambios.');
+        }
+    });
+    
+    // Undo All button click handler
+    $('#undo-all').on('click', function() {
+        if (initialState) {
+            undoStack.push(getTableState());  // Save the current state in the undo stack before undoing all
+            setTableState(initialState);  // Set the table to the initial state
+            redoStack = [];  // Clear redo stack as the user is undoing all
+        } else {
+            alert('No existe un estado inicial.');
+        }
+    });
+    
+    
+    
+    </script>
+{% endblock %}
+
+{% block content %}
+
+
+
+<div class="container mt-5" style="margin-top: 60px; margin-bottom: 60px;">
+
+ 	<!-- Upload Form -->
+    <div  id="upload-container"  style="text-align: center; margin-top: 20px; margin-bottom: 20px;">
+	<form id="upload-form" enctype="multipart/form-data" method="post">
+
+		<h1>Carga tu archivo .xslx/.csv</h1>
+
+       		{% csrf_token %}
+        	{{ form.as_p }}
+        	<div class="btn-container">
+            		<button type="submit" class="btn btn-primary">Cargar</button>
+        	</div>
+    	</form>
+    </div>
+
+     <!-- Table options -->
+<div id="table-options" style="display: none; text-align: center; margin-top: 20px; margin-bottom: 20px;">
+    <div class="btn-container">
+        <button id="undo" class="btn btn-warning mt-3">Deshacer</button>
+        <button id="redo" class="btn btn-info mt-3">Rehacer</button>
+        <button id="undo-all" class="btn btn-danger mt-3">Deshacer Todo</button>
+        <button id="save-table" class="btn btn-success mt-3">Guardar Lista</button>
+    </div>
+</div>
+ 
+
+
+     <!-- table -->
+<div id="table-container" class="table-responsive">
+</div>
+
+
+
+<!-- Loading Spinner -->
+<div id="loading-spinner" style="display: none; text-align: center; margin-top: 20px; margin-bottom: 20px;">
+    <div id="loading-icon" class="spinner-border" role="status">
+        <!-- This span will show the current icon -->
+        <span class="visually-hidden"></span>  <!-- Screen-reader text -->
+    </div>
+    <p id="loading-text" style="margin-top: 10px;">Cargando datos, por favor espera...</p>
+</div>
+
+
+</div>
+<br><br>
+{% endblock content %}
+

@@ -21,10 +21,10 @@
                 <tbody>
                     {% for a in entity %}
                     <tr>
-                        <td>{{ a.rut_acreditador }}</td>
-                        <td>{{ a.nombre }} {{ a.app_paterno }}  {{ a.app_materno }}</td>
-                        <td>{{ a.user }}</td>
-                        <td>{{ a.correo }}</td>
+                        <td>{{ a.rut }}</td>
+                        <td>{{ a.first_name }} {{ a.last_name }}</td>
+                        <td>{{ a.username }}</td>
+                        <td>{{ a.email }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

@@ -7,7 +7,7 @@ from bootstrap_datepicker_plus.widgets import DatePickerInput
 class EventoForm(forms.ModelForm):
     class Meta:
         model = Evento
-        fields = ['nom_evento', 'fec_inicio', 'fec_termino', 'imagen']  # Add 'imagen' here
+        fields = ['nom_evento', 'fec_inicio', 'fec_termino', 'imagen', 'accmin', 'accmax', 'activo']  # Add 'imagen' here
 
         widgets = {
             'fec_inicio': DatePickerInput(options={"format": "DD/MM/YYYY"}),

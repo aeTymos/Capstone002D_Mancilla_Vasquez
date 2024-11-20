@@ -25,9 +25,11 @@ urlpatterns = [
     path('', include('django_login.urls')),
     path('', include('management.urls')),
     path('', include('events.urls')),
+    path('', include('files.urls')),
     path('', include('api.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
 ]
 
-if settings.DEBUG:
+if settings.DEBUG: # dev
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

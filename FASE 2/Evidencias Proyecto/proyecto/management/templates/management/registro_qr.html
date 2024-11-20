@@ -1,0 +1,122 @@
+{% extends "management/base.html" %}
+{% load static %}
+
+{% block css %}
+<style>
+  .centered-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  h1 {
+    margin-bottom: 20px;
+    font-size: 2em;
+    text-align: center;
+  }
+
+  video {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  #result {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 1.2em;
+  }
+
+  #error-message {
+    display: none;
+    text-align: center;
+    font-size: 1.5em;
+    color: red;
+  }
+</style>
+{% endblock css %}
+
+{% block content %}
+
+<div class="centered-content">
+  <h1>Registro de Pulseras para el Evento</h1>
+
+  <video id="video" autoplay></video>
+
+  <p id="error-message">Error al conectar la cámara.</p>
+  <p id="result"></p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.3.1/dist/jsQR.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    const video = document.getElementById("video");
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    const resultElement = document.getElementById("result");
+    const errorMessage = document.getElementById("error-message");
+    let lastQRCode = null;
+    const acreditadoId = {{ acreditado_id }};  // ID del acreditado pasado desde la vista
+  
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices
+        .getUserMedia({ video: { facingMode: "environment" } })
+        .then((stream) => {
+          video.srcObject = stream;
+          video.play();
+          requestAnimationFrame(scanQRCode);
+        })
+        .catch((err) => {
+          video.style.display = "none";
+          errorMessage.style.display = "block";
+          console.error("Error al acceder a la cámara: ", err);
+        });
+    } else {
+      video.style.display = "none";
+      errorMessage.style.display = "block";
+      console.error("La API de MediaDevices no está disponible en este navegador.");
+    }
+  
+    function scanQRCode() {
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const qrCode = jsQR(imageData.data, canvas.width, canvas.height);
+  
+        if (qrCode && qrCode.data !== lastQRCode) {
+          lastQRCode = qrCode.data;
+          resultElement.innerText = "Registrando código: " + qrCode.data;
+  
+          $.ajax({
+            url: `/management/registrar_qr/`,
+            method: "POST",
+            data: {
+              qr_data: qrCode.data,
+              acreditado_id: acreditadoId,
+              csrfmiddlewaretoken: "{{ csrf_token }}",
+            },
+            success: function (response) {
+              resultElement.innerText = response.message;
+            },
+            error: function (xhr, status, error) {
+              resultElement.innerText = "Error: " + error;
+            },
+          });
+        }
+      }
+  
+      requestAnimationFrame(scanQRCode);
+    }
+  </script>
+  
+
+{% endblock content %}

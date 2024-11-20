@@ -27,12 +27,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 load_dotenv()
-SECRET_KEY = 'GR=H8nQV%y(47+wdg@b.L^&J[Su*_~Ns'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
 
 # SECURITY WARNING: don't run with debug turned on in production
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
 DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
+
+USE_SPACES = os.getenv("USE_SPACES", "False") == "True"
 
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
 CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS]
@@ -52,17 +54,22 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    # 3rd party
     'crispy_forms',
     'crispy_bootstrap5',
     'bootstrap_datepicker_plus',
     'rest_framework',
     'rest_framework.authtoken',
+    'storages',
+    'anymail',
+    'django_cleanup', # for testing
     # SERVICE APPS
     'api',
     'home',
     'django_login',
     'events',
-    'management',
+    'management.apps.ManagementConfig',
+    'files',
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
@@ -77,13 +84,22 @@ BOOTSTRAP_DATEPICKER_PLUS = {
     },
     'variant_options': {
         'date': {
-            'format': 'MM/DD/YYYY',
+            'format': 'DD-MM-YYYY',
         },
     },
     'attrs': {
         'class': 'datepicker'
     }
 }
+
+# Anymail settings
+ANYMAIL = {
+    'MAILGUN_API_KEY': os.getenv('MAILGUN_API_KEY'),
+    'MAILGUN_SENDER_DOMAIN': 'mg.acreditacionesqr.online'
+}
+EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
+DEFAULT_FROM_EMAIL = 'postmaster@mg.acreditacionesqr.online'
+SERVER_EMAIL = 'postmaster@mg.acreditacionesqr.online'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -102,8 +118,9 @@ REST_FRAMEWORK = {
     ] 
 }
 
+AUTH_USER_MODEL = 'management.Acreditador'
+
 # SSL settings, enable them if you're hosting the site, don't if you're not
-"""
 CSRF_COOKIE_SECURE = True
 
 SESSION_COOKIE_SECURE = True
@@ -112,7 +129,6 @@ SESSION_COOKIE_SECURE = True
 # SECURE_SSL_REDIRECT = True
 
 SECURE_BROWSER_XSS_FILTER = True
-"""
 
 ROOT_URLCONF = 'capstone_site.urls'
 
@@ -138,18 +154,6 @@ WSGI_APPLICATION = 'capstone_site.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-"""
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-"""
-
-DEBUG = True
-DEVELOPMENT_MODE = True
 
 if DEVELOPMENT_MODE is True:
     DATABASES = {
@@ -183,30 +187,74 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
 LANGUAGE_CODE = 'es-es'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Santiago'
 
 USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# Digital Ocean space settings
+USE_SPACES = os.getenv("USE_SPACES", "False") == "True"
 
+if USE_SPACES is True: 
+    DO_ACCESS_KEY = os.getenv('BUCKET_ACCESS_KEY')
+    DO_SECRET_KEY = os.getenv('BUCKET_SECRET_KEY')
+    BUCKET_NAME = os.getenv('BUCKET_NAME')
+    ENDPOINT_URL = 'https://nyc3.digitaloceanspaces.com'
 
-#Media files settings
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    STORAGES = {
+        'default': {
+            'BACKEND': 'storages.backends.s3.S3StaticStorage',
+            'OPTIONS': {
+                'access_key': DO_ACCESS_KEY,
+                'secret_key': DO_SECRET_KEY,
+                'region_name': 'nyc3',
+                'bucket_name': BUCKET_NAME,
+                'endpoint_url': ENDPOINT_URL,
+                'location': 'media',
+                'default_acl': 'private',
+                'custom_domain': f'{BUCKET_NAME}.nyc3.cdn.digitaloceanspaces.com',
+                'file_overwrite': False,
+                'querystring_auth': True,
+            },
+        },
+        'staticfiles': {
+            'BACKEND': 'storages.backends.s3.S3StaticStorage',
+            'OPTIONS': {
+                'access_key': DO_ACCESS_KEY,
+                'secret_key': DO_SECRET_KEY,
+                'region_name': 'nyc3',
+                'bucket_name': BUCKET_NAME,
+                'endpoint_url': ENDPOINT_URL,
+                'location': 'staticfiles',
+                'default_acl': 'public-read',
+                'custom_domain': '%s.nyc3.cdn.digitaloceanspaces.com' % (BUCKET_NAME)
+            },
+        },
+    }
 
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+    STATIC_URL = f'https://{BUCKET_NAME}.nyc3.cdn.digitaloceanspaces.com/staticfiles/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+    #Media files settings
+    MEDIA_URL = f'https://{BUCKET_NAME}.nyc3.cdn.digitaloceanspaces.com/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+else:
+    STATIC_URL = '/static/'
+    STATIC_ROOT = BASE_DIR / 'static/'
+
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 

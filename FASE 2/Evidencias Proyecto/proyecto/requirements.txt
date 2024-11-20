@@ -6,8 +6,21 @@ django-crispy-forms
 django-bootstrap-datepicker-plus
 crispy-bootstrap5
 django-rest-framework
+django-anymail[mailgun]
 python-dotenv
 psycopg2-binary # dev, pyscopg2 if production
 pillow
 boto3
 django-storages
+pandas
+openpyxl
+beautifulsoup4
+python-magic
+rutificador
+# testing packages
+django-webtest
+coverage
+factory-boy
+django-cleanup
+pytest 
+pytest-django

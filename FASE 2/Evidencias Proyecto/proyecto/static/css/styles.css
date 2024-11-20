@@ -1,87 +1,212 @@
-body{
-	background-image: linear-gradient(#41455a, #739Ea5, #FFFFFF, #09FBC0);
-	min-height: 100vh;
-	border: #1f2937;
-    /* background-image: url('https://previews.123rf.com/images/vectorwin/vectorwin1904/vectorwin190400144/122946185-vector-de-patrones-sin-fisuras-de-la-vida-animal-divertido-gato-linda-mascota-gatito-silueta-huella-.jpg'); */
+body {
+    background-image: linear-gradient(to bottom, #363949, #739Ea5, #FFFFFF, #09FBC0);
+    min-height: 100vh;
     background-blend-mode: darken;
 }
 
 .navbar {
-    background-image: linear-gradient(#739Ea5, #e0e0e0);;
+    background-image: linear-gradient(#739Ea5, #e0e0e0);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .card {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
 }
 
-* { 
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;  
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
-.box{
-	height: 100%;
-	font-size: 40px;
-	
+.card i {
+    font-size: 48px;
+    color: #349e99;
+    margin-bottom: 15px;
 }
 
-.btn-1:hover::after{
-	width:100%
-  }
-
-
-::-webkit-scrollbar{
-	width: 12px;
+.card h5 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #41455a;
 }
 
-::-webkit-scrollbar-track{
-	border-radius: 100vh;
-	background: #1f2937;
+.card .btn-primary {
+    background-color: #349e99;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    color: white;
 }
 
-
-::-webkit-scrollbar-thumb{
-	background: linear-gradient(rgb(134, 239, 172),
-		rgb(200, 208, 220), rgb(25, 162, 196));
+.card .btn-primary:hover {
+    background-color: #06c7a3;
+    transform: scale(1.05);
 }
 
-.navbar-brand {
+.card-grid {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
 }
 
-.carousel{
-    width: 100%;
-    height: 50%;
-}
-
-.center{
-    position: relative;
-    left: 0;
-    right: 0;
-    margin: auto; 
-    padding-left: 3.5rem; 
-    padding-right: 3.5rem;
-}
-
-@media screen and (max-width: 600px) {
-    .column {
-      width: 100%;
+@media (max-width: 768px) {
+    .card-grid {
+        flex-direction: column;
+        align-items: center;
     }
-  }
 
-.box-element{
-	box-shadow:hsl(0, 0%, 80%) 0 0 16px;
-	background-color: #fff;
-	border-radius: 4px;
-	padding: 10px;
+    .card {
+        width: 100%;
+    }
 }
 
-.hidden{
-	display: none!important;
+h1.display-4, h2, h5 {
+    font-family: 'Montserrat', sans-serif;
 }
 
-.col-lg-4, .col-lg-6, .col-lg-8, .col-lg-12{
-	margin-top: 10px;
+.container {
+    max-width: 1200px;
+}
+
+.banner-img {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.text-muted {
+    color: #ffffff;
+}
+
+.text-center h2 {
+    color: #41455a;
+}
+
+.carousel-item img {
+    max-height: 500px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    height: auto;
+}
+
+.carousel-item {
+    transition: transform 1s ease-in-out;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    height: 50px;
+    width: 50px;
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Sección para las cards de Acreditación, Histórico de eventos, y Escanear QR */
+.section-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    background-color: #f4f4f9;
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 29px;
+}
+
+.section-left {
+    width: 500px; /* Aumentar el tamaño de la columna izquierda para las imágenes */
+}
+
+.section-left img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    object-fit: cover; /* Asegurarse de que la imagen ocupe todo el espacio disponible */
+}
+
+.section-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center; /* Centrará los elementos horizontalmente */
+    text-align: center; /* Centrará el texto dentro de los elementos */
+    max-width: 80% /* Ajustar el tamaño de la columna derecha */
+}
+
+.section-title {
+    font-size: 28px;
+    margin-bottom: 15px;
+    color: #41455a;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+.section-title i {
+    margin-right: 10px;
+    font-size: 32px;
+}
+
+.section-description {
+    font-size: 16px;
+    color: #41455a;
+    margin-bottom: 20px;
+}
+
+.section-button {
+    background-color: #349e99;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    color: white;
+    text-align: center;
+    width: fit-content;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.section-button:hover {
+    background-color: #06c7a3;
+    transform: scale(1.05);
+}
+
+/* Responsividad para las cards */
+@media (max-width: 768px) {
+    .section {
+        flex-direction: column;
+        text-align: center; /* Asegura que el texto esté centrado */
+    }
+
+    .section-left {
+        margin-bottom: 20px;
+        width: 100%;
+        display: flex;
+        justify-content: center; /* Centra la imagen en dispositivos móviles */
+    }
+
+    .section-right {
+        max-width: 100%;
+        align-items: center; /* Asegura que los elementos estén centrados */
+        text-align: center; /* Centra el texto */
+    }
 }

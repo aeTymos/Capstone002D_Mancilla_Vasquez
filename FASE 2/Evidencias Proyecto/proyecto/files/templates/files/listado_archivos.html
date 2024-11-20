@@ -1,0 +1,224 @@
+{% extends "management/base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block css %}
+<style>
+.modal-body {
+    max-height: 80vh;
+    overflow-y: auto;
+    text-align: center;
+}
+
+.modal-body th {
+    text-align: center;
+}
+
+.custom-modal-width {
+    max-width: 1668px;
+    width: 100%;
+}
+</style>
+{% endblock %}
+
+{% block js %}
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!/^http/.test(settings.url)) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
+</script>
+<script>
+    $(document).ready(function() {
+        let currentFileId = null;
+
+        $('a[data-bs-target="#exampleModal"]').on('click', function(e) {
+            e.preventDefault();
+            currentFileId = $(this).data('file-id'); // Store the file ID
+
+            $('#modal-body').html('<div class="d-flex justify-content-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+            $('#exampleModal').modal('show');
+
+            $.get(`/dashboard/listado-archivos/preview/${currentFileId}/`, function(data) {
+                if (data.html) {
+                    $('#modal-body').html(data.html);
+                    $('#exampleModal').modal('show');
+                    $('#accept-btn').prop('disabled', false);
+                } else if (data.error) {
+                    $('#modal-body').html('<p>' + data.error + '</p>');
+                    $('#exampleModal').modal('show');
+                    $('#accept-btn').prop('disabled', true);
+                } else {
+                    $('#modal-body').html('<p>Error al cargar el contenido del archivo.</p>');
+                }
+            }).fail(function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error al intentar encontrar el archivo. Por favor, inténtalo de nuevo.'
+                });
+            });
+        });
+
+        $('#accept-btn').on('click', function() {
+			const htmlData = $('#modal-body').html();
+            if (currentFileId) {
+
+                Swal.fire({
+                    title: 'Cargando datos...',
+                    html: 'Por favor, espera.',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        Swal.showLoading()
+                    },
+
+                });
+
+                $.post(`/dashboard/listado-archivos/aceptar/${currentFileId}/`, { html_data: htmlData }, function(response) {
+                    Swal.close()
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Éxito',
+                        text: '¡Archivo aceptado y datos almacenados!'
+                    }).then(() => {
+                        $('#exampleModal').modal('hide');
+                    });
+                }).fail(function() {
+                    Swal.close()
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al aceptar el archivo. Por favor, inténtalo de nuevo.'
+                    });
+                });
+            }
+        });
+
+        $('#reject-btn').on('click', function() {
+            if (currentFileId) {
+                
+                Swal.fire({
+                    title: 'Cargando...',
+                    html: 'Por favor, espera.',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        Swal.showLoading()
+                    }
+                });
+
+                $.post(`/dashboard/listado-archivos/rechazar/${currentFileId}/`, function(response) {
+                    Swal.close()
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Éxito',
+                        text: '¡Archivo rechazado y notificación enviada!'
+                    }).then(() => {
+                        $('#exampleModal').modal('hide');
+                    });
+                }).fail(function() {
+                    Swal.close()
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al rechazar el archivo. Por favor, inténtalo de nuevo.'
+                    });
+                });
+            }
+        });
+    });
+</script>
+
+{% endblock %}
+
+{% block content %}
+<br><br>
+<div class="container">
+    <div class="row">
+        <h2>Mensajes recibidos</h2>
+        <hr>
+        <br><br>
+        <div class="table-responsive small">
+            <table class="table table-striped table-sm">
+                <thead>
+                <tr>
+                    <th scope="col">Nombre emisor</th>
+                    <th scope="col">Correo emisor</th>
+                    <th scope="col">Tipo de mensaje</th>
+                    <th scope="col">Mensaje</th>
+                    <th scope="col">Archivo</th>
+                    <th scope="col">Fecha/Hora del mensaje</th>
+                    <th scope="col">Estado</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for men in entity %}
+                    <tr>
+                        <td>{{ men.nombre }}</td>
+                        <td>{{ men.correo }}</td>
+                        {% if men.tipo_consulta == 0 %}
+                            <td>Consulta</td>
+                        {% else %}
+                            <td>Envío de nómina</td>
+                        {% endif %}
+                        <td>{{ men.mensaje }}</td>
+                        {% if men.archivo %}
+                            <td>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#exampleModal" data-file-id="{{ men.id }}">{{ men.archivo.name|basename }}</a>
+                            </td>
+                        {% else %}
+                            <td>N/A</td>
+                        {% endif %}
+                        <td>{{ men.hora_subido }}</td>
+                        <td>
+                            {% if men.aceptado %} 
+                                Atendido 
+                            {% else %}
+                                Pendiente
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <hr>
+            <div>
+                {% include 'home/paginator.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog custom-modal-width">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Vista previa</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        {% if encargado_info %}
+        <div class="encargado-info">
+            <p><strong>Encargado:</strong> {{ encargado_info.nombre }}</p>
+            <p><strong>Teléfono:</strong> {{ encargado_info.telefono }}</p>
+            <p><strong>Correo:</strong> {{ encargado_info.correo }}</p>
+        </div>
+        {% endif %}
+        <div class="modal-body" id="modal-body">
+          <!-- File content will be loaded here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+		  {% if not men.aceptado %}
+		  <button type="button" class="btn btn-danger" id="reject-btn">Rechazar</button>
+          <button type="button" class="btn btn-primary" id="accept-btn">Aceptar</button>
+		  {% endif %}
+        </div>
+      </div>
+    </div>
+</div>  
+{% endblock %}

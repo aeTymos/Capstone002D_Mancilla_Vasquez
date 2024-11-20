@@ -1,6 +1,93 @@
 {% extends 'home/base.html' %}
 {% load crispy_forms_tags %}
 
+{% block js %}
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inquiryTypeSelect = document.getElementById('id_tipo_consulta');
+        const fileUploadSection = document.getElementById('div_id_archivo');
+
+        function toggleFileUpload() {
+            if (inquiryTypeSelect.value == '1') {
+                fileUploadSection.style.display = 'block';
+            } else {
+                fileUploadSection.style.display = 'none';
+            }
+        }
+
+        toggleFileUpload();
+        inquiryTypeSelect.addEventListener('change', toggleFileUpload);
+
+        // AJAX form submission
+        $('form').on('submit', function(event) {
+            event.preventDefault();  // Prevent the form from submitting normally
+
+            // Show loading toast
+            Swal.fire({
+                title: 'Enviando...',
+                text: 'Estamos procesando tu mensaje.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Create a FormData object
+            const formData = new FormData(this);
+
+            // Send the form data via AJAX
+            $.ajax({
+                url: '{% url "contacto" %}',  // Your form action URL (make sure it's correct)
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    Swal.close();  // Close the loading toast
+
+                    if (response.success) {
+                        // Show success toast
+                        Swal.fire({
+                            icon: 'success',
+                            title: response.message,
+                            showConfirmButton: false,
+                            timer: 2000
+                        }).then(() => {
+                            // Optionally, redirect or reset the form
+                            window.location.href = '{% url "contacto" %}';  // Or reset form if desired
+                        });
+                    } else {
+                        // Handle form validation errors
+                        let errorMessages = '';
+                        for (const field in response.errors) {
+                            response.errors[field].forEach(function(error) {
+                                errorMessages += `<p>${error}</p>`;
+                            });
+                        }
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hubo un error',
+                            html: errorMessages,
+                            showConfirmButton: true
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    Swal.close();  // Close the loading toast
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Hubo un error al enviar el mensaje. Por favor, intenta nuevamente.',
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
+
 {% block content %}
 <br><br>
 <div class="container">
@@ -10,11 +97,12 @@
                 <div class="card-body">
                     <h2>¡Contáctanos!</h2>
                     <hr>
-                    <form action="" method="post">
+                    <form method="post" enctype="multipart/form-data">
+                        
                         {% csrf_token %}
                         {{ form | crispy }}
 
-                        <input class="btn btn-primary" value="enviar" type="text">
+                        <input class="btn btn-primary" value="Enviar" type="submit">
                     </form>
                 </div>
             </div>
@@ -22,4 +110,5 @@
     </div>
 </div>
 <br><br>
+
 {% endblock %}
